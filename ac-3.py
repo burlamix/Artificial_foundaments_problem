@@ -29,9 +29,6 @@ def ac3(csp):
 				if Xk != Xj:
 					queue.append((Xk, Xi))
 
-
-
-
 	for Xi in csp.variables:
 		print(Xi)
 		for x in csp.domains[Xi][:]:
@@ -66,11 +63,26 @@ def different_values_constraint(A, a, B, b):
 def ac4(csp):
 
 	#get all the arch
-	arch = [(Xi, Xk) for Xi in csp.variables for Xk in csp.neighbors[Xi]]
+	queue = [(Xi, Xk) for Xi in csp.variables for Xk in csp.neighbors[Xi]]
 
-	Q = 0
+	List = []
+	#create a the support dictonary of dictionary of list
 	S = {}
-	
+	for var in csp.variables:
+		S[var]={}
+		for lab in csp.domains[var][:]:
+			S[var][lab]=[]
+
+	#create counter
+	counter = {}
+	for var1 in csp.variables:
+		counter[var1]={}
+		for var2 in csp.variables:
+			counter[var1][var2]={}
+			for lab in csp.domains[var1][:]:
+				counter[var1][var2][lab]=0
+
+
 
 	#for each arch or from another point of view for each possible costrain
 	while(queue):
@@ -78,17 +90,29 @@ def ac4(csp):
 		(Xi, Xj) = queue.pop()
 
 		for b in csp.domains[Xi][:]:
-			total = 0
-			for c in csp.domains[Yi][:]:
+			for c in csp.domains[Xj][:]:
 				if (csp.constraints(Xi, b, Xj, c)):
 					#increment counter(vi, ai, vj) and add (vi, ai) to S[vj, aj]
-					total = total + 1
-					s[Xj][c].append((Xi,x))
+					counter[Xi][Xj][b]=counter[Xi][Xj][b]+1
+					S[Xj][c].append((Xi,b))
+			if (counter[Xi][Xj][b]==0):
+				List.append((Xi,b))
+				csp.delete(Xi, b)
+
+
+	while(List):
+		(Yi, y) = List.pop()
+
+		for (Xi,x) in S[Yi][y]:
+			if (x in csp.domains[Xi]) :
+				counter[Xi][Yi][y]=counter[Xi][Yi][y]-1
+				List.append((Xi,x))
+				csp.delete(Xi,x)
 
 
 
 ######################################################################################################################################
-'''
+
 neighbors =  {'A': ['B'], 'B': ['A']}
 domains = {'A': [0, 1, 2, 3, 4], 'B': [0, 1, 2, 3, 4]}
 constraints = lambda X, x, Y, y: x % 2 == 0 and (x + y) == 4 and y % 2 != 0
@@ -97,4 +121,10 @@ constraints = lambda X, x, Y, y: (x % 2) == 0 and (x + y) == 4
 
 csp = csp(variables=None, domains=domains, neighbors=neighbors, constraints=constraints)
 
-print(ac3(csp))'''
+
+print(ac4(csp))
+
+for Xi in csp.variables:
+	print(Xi)
+	for x in csp.domains[Xi][:]:
+		print("      "+str(x))
