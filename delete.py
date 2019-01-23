@@ -10,7 +10,7 @@ import itertools
 import re
 import random
 
-# usless commit
+# usless committt
 
 
 class CSP(search.Problem):
